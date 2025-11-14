@@ -1,0 +1,3 @@
+# Info
+
+Argo application manifests
