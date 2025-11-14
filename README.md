@@ -1,2 +1,3 @@
-# infra
-The infrastructure repository; Helm, K8s
+# Introduction
+
+In this repository we keep infrastructure files, Helm, K8s, etc.
