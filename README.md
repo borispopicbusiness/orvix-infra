@@ -1,7 +1,8 @@
 # Introduction
 
 In this repository I store infrastructure files, Helm charts, K8s manifests, etc.
-(This section will be improved)
+
+**For more information, inspect or check out develop branch.**
 
 ## The k8s homelab
 
