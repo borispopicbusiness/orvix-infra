@@ -1,0 +1,22 @@
+resources:
+  limits:
+    cpu: 1
+    memory: 1Gi
+  requests:
+    cpu: 500m
+    memory: 500Mi
+
+# kubectl label nodes wn1 gateway-label=labeled
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: gateway-label
+              operator: In
+              values:
+                - labeled
+
+spring:
+  profiles:
+    active: dev
