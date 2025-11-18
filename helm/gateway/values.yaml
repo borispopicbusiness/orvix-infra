@@ -15,7 +15,7 @@ deployment:
 image:
   repository: borispopicdev/orvix-gateway
   # This sets the pull policy for images.
-  pullPolicy: Always
+  pullPolicy: Always # For dev and stage
   # Overrides the image tag whose default is the chart appVersion.
   tag: "latest"
   port: 8080
@@ -171,5 +171,5 @@ affinity: {}
 
 spring:
   contextPath:
-    profiles:
-      active: local
+  profiles:
+    active: local
