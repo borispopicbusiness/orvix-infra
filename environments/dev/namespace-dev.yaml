@@ -1,0 +1,7 @@
+#kubectl apply -f namespace-dev.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dev
+  labels:
+    environment: dev
