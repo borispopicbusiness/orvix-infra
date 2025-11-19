@@ -1,3 +1,5 @@
+namespace: dev
+
 resources:
   limits:
     cpu: 1
@@ -38,6 +40,9 @@ config:
     info.app.name=Orvix Gateway
     info.app.version=1.0.0
     info.app.description=Orvix Gateway microservice
+    spring.cloud.kubernetes.config.enabled=true
+    spring.cloud.kubernetes.config.name=gateway
+    spring.cloud.kubernetes.discovery=true
 
 spring:
   profiles:
