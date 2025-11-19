@@ -17,6 +17,28 @@ affinity:
               values:
                 - labeled
 
+volumeMounts:
+  - name: gateway-volume
+    mountPath: /etc/config
+
+volumes:
+  - name: gateway-volume
+    configMap:
+      name: gateway-configmap
+      items:
+        - key: application.properties
+          path: application.properties
+
+config:
+  applicationProperties: |
+    server.port=8080
+    spring.application.name=gateway
+    management.endpoints.web.exposure.include=health,info
+    management.info.env.enabled=true
+    info.app.name=Orvix Gateway
+    info.app.version=1.0.0
+    info.app.description=Orvix Gateway microservice
+
 spring:
   profiles:
     active: dev
