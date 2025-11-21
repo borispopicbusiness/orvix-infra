@@ -31,6 +31,16 @@ volumes:
         - key: application.properties
           path: application.properties
 
+ingress:
+  enabled: true
+  className: traefik
+  annotations: {}
+  hosts:
+    - host: gateway.dev.k8s-svc.homelab
+      paths:
+        - path: /
+          pathType: Prefix
+
 config:
   applicationProperties: |
     server.port=8080
@@ -40,9 +50,6 @@ config:
     info.app.name=Orvix Gateway
     info.app.version=1.0.0
     info.app.description=Orvix Gateway microservice
-    spring.cloud.kubernetes.config.enabled=true
-    spring.cloud.kubernetes.config.name=gateway
-    spring.cloud.kubernetes.discovery=true
 
 spring:
   profiles:

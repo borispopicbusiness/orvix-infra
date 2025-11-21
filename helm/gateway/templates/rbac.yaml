@@ -5,5 +5,5 @@ metadata:
   namespace: {{ .Values.namespace }}
 rules:
   - apiGroups: [""]
-    resources: ["configmaps", "secrets", "services", "endpoints"]
+    resources: ["configmaps", "secrets", "services", "endpoints", "pods"]
     verbs: ["get", "list", "watch"]
