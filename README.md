@@ -30,7 +30,7 @@ All nodes are actually QUEMU virtual machines:
     server@server-k8s-vms:~$
 
 This cluster is used to test deployments, run microservices, and experiment with infrastructure configurations in a controlled environment.
-Although, my portfolio application, Orvix, is still inactive, I am planning to the kubernetes cluster for its production deployment.
+Although, my portfolio application, Orvix, is still inactive, I am planning to use the kubernetes cluster for its production deployment.
 
 ## CI/CD organization
 
