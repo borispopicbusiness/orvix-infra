@@ -1,0 +1,14 @@
+# This test file is generated with the following command:
+#
+# kubectl create secret generic --from-literal=username=test --from-literal=password=1234! -n dev --dry-run=client -o yaml
+#
+
+apiVersion: v1
+data:
+  password: MTIzNCE=
+  username: dXNlcg==
+kind: Secret
+metadata:
+  creationTimestamp: null
+  name: mysecret
+  namespace: dev
