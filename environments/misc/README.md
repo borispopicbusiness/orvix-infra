@@ -57,7 +57,7 @@ tar -xvzf kubeseal-0.33.1-linux-amd64.tar.gz kubeseal
 sudo install -m 755 kubeseal /usr/local/bin/kubeseal
 ```
 
-You may create your first sealed secret it.
+You may create your first sealed secret with it.
 
 ```bash
 boris@boris-Nitro-AN515-58:~/core-repos/orvix/orvix-infra$ kubectl create secret generic mysecret --from-literal=username=user --from-literal=password=1234! -n dev --dry-run=client -o yaml | kubeseal --controller-name=sealed-secrets --controller-namespace=sealed-secrets --format yaml > test-sealed-secrets.yaml
