@@ -1,0 +1,37 @@
+# Use this configuration with the codecentric/keycloakx chart
+keycloak:
+  replicas: 1
+
+# Make sure these lines are at the TOP level of your values file (not indented under 'keycloak:')
+command:
+  - "/opt/keycloak/bin/kc.sh"
+  - "start-dev"
+
+extraEnv: |
+  # Ensure extraEnv is also at the top level
+  - name: KEYCLOAK_ADMIN
+    valueFrom:
+      secretKeyRef:
+        name: keycloak-ss-dev
+        key: KEYCLOAK_ADMIN
+  - name: KEYCLOAK_ADMIN_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: keycloak-ss-dev
+        key: KEYCLOAK_ADMIN_PASSWORD
+  - name: KC_FEATURES
+    value: preview
+  # Remove KC_DB: h2 - it's redundant with start-dev
+  - name: KC_HOSTNAME
+    value: keycloak-dev.dev.k8s-svc.homelab
+
+# The ingress section seems okay, just verify indentation
+ingress:
+  enabled: true
+  className: traefik
+  hosts:
+    - host: keycloak-dev.dev.k8s-svc.homelab
+      paths:
+        - path: /
+          pathType: Prefix
+

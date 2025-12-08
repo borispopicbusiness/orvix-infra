@@ -4,7 +4,7 @@
 
 These are the instructions we must to follow:
 
-- Add the official Keycloak helm repo: helm repo add codecentric https://codecentric.github.io/helm-charts
+- Add the official Keycloak helm repo: codecentric https://codecentric.github.io/helm-charts
 
 ```bash
 helm repo add codecentric https://codecentric.github.io/helm-charts
