@@ -58,6 +58,10 @@ extraEnv: |
 helm install keycloak-dev cpdecentric/keycloakx -n dev -f values-dev.yaml
 ```
 
+```bash
+helm upgrade --install keycloak-dev codecentric/keycloakx -n dev -f ./environments/dev/keycloak/values-dev.yaml
+```
+
 ## The resources and limits concerns
 
 For the remote development environment/namespace `dev` these two resources configurations are circulating for now:
