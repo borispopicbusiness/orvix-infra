@@ -8,6 +8,11 @@ resources:
     cpu: 500m
     memory: 500Mi
 
+hostAliases:
+  - ip: "192.168.1.242"
+    hostnames:
+      - "keycloak-dev.keycloak.example.com"
+
 image:
   repository: borispopicdev/orvix-gateway
   tag: 1.0.8-dev
@@ -37,7 +42,7 @@ config:
   data:
     server.port: "8080"
     spring.application.name: "gateway - dev"
-    spring.security.oauth2.resourceserver.jwt.issuer-uri: http://keycloak-dev-keycloakx-http.dev.svc.cluster.local/auth/realms/orvix-realm
+    spring.security.oauth2.resourceserver.jwt.issuer-uri: http://keycloak-dev.keycloak.example.com/auth/realms/orvix-realm
     management.endpoints.web.exposure.include: "health,info,refresh"
     management.info.env.enabled: "true"
     info.app.name: "Orvix Gateway (dev) - from Config Map"

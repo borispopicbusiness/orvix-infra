@@ -1,15 +1,7 @@
 keycloak:
   replicas: 1
 
-postgresql:
-  enabled: false
-
-command:
-  - "/opt/keycloak/bin/kc.sh"
-  - "start-dev"
-
 extraEnv: |
-  # Ensure extraEnv is also at the top level
   - name: KEYCLOAK_ADMIN
     valueFrom:
       secretKeyRef:
@@ -22,20 +14,25 @@ extraEnv: |
         key: KEYCLOAK_ADMIN_PASSWORD
   - name: KC_FEATURES
     value: preview
-  - name: KC_HOSTNAME_PORT
-    value: ""
-
-hostname:
-  url: "http://keycloak-dev-keycloakx-http.dev.svc.cluster.local"
-  adminUrl: "http://keycloak-dev-keycloakx-http.dev.svc.cluster.local"
-  frontendUrl: "http://keycloak-dev-keycloakx-http.dev.svc.cluster.local"
-
+  - name: KC_HOSTNAME
+    value: "keycloak-dev.keycloak.example.com"
+  - name: KC_HOSTNAME_STRICT
+    value: "true"
+  - name: KC_PROXY
+    value: "edge"
 
 ingress:
   enabled: true
   className: traefik
   hosts:
-    - host: keycloak-dev-keycloakx-http.dev.svc.cluster.local
+    - host: keycloak-dev.keycloak.example.com
       paths:
         - path: /
           pathType: Prefix
+
+postgresql:
+  enabled: false
+
+command:
+  - "/opt/keycloak/bin/kc.sh"
+  - "start-dev"
