@@ -1,0 +1,38 @@
+keycloak:
+  replicas: 1
+
+extraEnv: |
+  - name: KEYCLOAK_ADMIN
+    valueFrom:
+      secretKeyRef:
+        name: keycloak-ss-dev
+        key: KEYCLOAK_ADMIN
+  - name: KEYCLOAK_ADMIN_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: keycloak-ss-dev
+        key: KEYCLOAK_ADMIN_PASSWORD
+  - name: KC_FEATURES
+    value: preview
+  - name: KC_HOSTNAME
+    value: "keycloak-dev.keycloak.example.com"
+  - name: KC_HOSTNAME_STRICT
+    value: "true"
+  - name: KC_PROXY
+    value: "edge"
+
+ingress:
+  enabled: true
+  className: traefik
+  hosts:
+    - host: keycloak-dev.keycloak.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+
+postgresql:
+  enabled: false
+
+command:
+  - "/opt/keycloak/bin/kc.sh"
+  - "start-dev"

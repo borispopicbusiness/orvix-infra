@@ -33,6 +33,16 @@ spec:
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- if .Values.hostAliases }}
+      hostAliases:
+        {{- range .Values.hostAliases }}
+        - ip: "{{ .ip }}"
+          hostnames:
+            {{- range .hostnames }}
+            - "{{ . }}"
+            {{- end }}
+        {{- end }}
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           {{- with .Values.securityContext }}
