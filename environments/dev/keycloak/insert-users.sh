@@ -3,6 +3,15 @@
 USERNAME=$1
 PASSWORD=$2
 
+#                     Check input arguments
+if [ -z "$USERNAME" ] || [ -z "$PASSWORD" ]; then
+  echo "Usage: @0 <username> <password>"
+  echo ""
+  echo "Example:"
+  echo " @0 john.doe john.doe's_password"
+  exit 1
+fi
+
 #                     Get token via client_credentials
 TOKEN=$(curl -s -X POST \
   "$KEYCLOAK/realms/$REALM/protocol/openid-connect/token" \
