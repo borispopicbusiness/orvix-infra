@@ -20,6 +20,31 @@ helm repo add codecentric https://codecentric.github.io/helm-charts
 helm install keycloak codecentric/keycloakx
 ```
 
+- install Local Path Provisioner and set default StorageClass
+
+```bash
+kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
+kubectl patch storageclass local-path \
+  -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+```
+
+ This marks the local-path StorageClass as the default. This is important because:
+ 1. Any PersistentVolumeClaim without storageClassName will use it automatically
+ 2. Stateful applications (like Keycloak) rely on this behavior
+    
+ ```bash
+  kubectl get storageclass
+  ```
+
+ At least one should be marked as default:
+
+ ```bash
+  boris@boris-Nitro-AN515-58:~/core-repos/orvix/orvix-infra/environments/dev/keycloak$ kubectl get storageclass
+  NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+  local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  3h47m
+  boris@boris-Nitro-AN515-58:~/core-repos/orvix/orvix-infra/environments/dev/keycloak$
+  ```
+
 - Create values-dev.yaml to customize the fields and env variables
 
 - After preparing the custom values yaml, Keycloak can be deployed
@@ -121,6 +146,95 @@ ingress:
       paths:
         - path: /
           pathType: Prefix
+```
+
+1. Exposes Keycloak externally via Traefik Ingress Controller
+2. Maps the hostname, **keycloak-dev.keycloak.example.com**
+3. Routes all traffic (**/**) to the Keycloak service
+
+#### Persistent Storage & Pod Placement (Keycloak)
+
+This section defines how Keycloak stores data and where it is scheduled within the cluster.
+
+- Persistent Volume Claim (volumeClaimTemplates)
+  
+  ```yaml
+  volumeClaimTemplates: |
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+  ```
+
+  A Persistent Volume Claim (PVC) is automatically created for the Keycloak pod:
+    1. Name: data
+    2. Size: 1Gi
+    3. Access mode: ```ReadWriteOnce```
+  
+  This means:
+    - Each Keycloak pod gets its own dedicated storage
+    - The volume is attached to only one node at a time
+    - Data is persisted across pod restarts
+
+- Volume Mount (extraVolumeMounts)
+
+  ```yaml
+  extraVolumeMounts: |
+    - name: data
+      mountPath: /opt/keycloak/data
+  ```
+  The created volume is mounted inside the container:
+  - Runtime data
+  - Embedded database files (in dev mode)
+  - Temporary and internal state
+  
+  This ensures that:
+  
+  - Data survives container restarts
+  - The application state is not lost
+
+- Node Affinity (affinity)
+
+  ```yaml
+  affinity: |
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                  - k8s-wn3
+  ```
+  Keycloak is explicitly scheduled to run on a specific node, k8s-wn3.
+  This is enforced using ```requiredDuringSchedulingIgnoredDuringExecution```.
+  Meaning:
+    - The pod must be scheduled on k8s-wn3
+    - If the node is unavailable, the pod will remain **Pending**
+
+### Secrets Management (SealedSecrets)
+
+Instead of storing plain Kubernetes Secrets, this project uses Sealed Secrets from Bitnami.
+This allows sensitive data (like Keycloak admin credentials) to be safely stored in Git.
+
+Create a temporary secret:
+
+```bash
+kubectl create secret generic keycloak-ss-dev \
+  -n dev \
+  --from-literal=KEYCLOAK_ADMIN=admin \
+  --from-literal=KEYCLOAK_ADMIN_PASSWORD=admin \
+  --dry-run=client -o yaml > secret.yaml
+```
+
+Seal it:
+
+```bash
+kubeseal --format yaml < secret.yaml > keycloak-ss-dev-sealed.yaml
 ```
 
 ## Post-installation diagnostics
