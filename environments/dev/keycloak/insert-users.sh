@@ -41,7 +41,11 @@ CREATE_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
   -H "Content-Type: application/json" \
   -d "{
     \"username\": \"$USERNAME\",
-    \"enabled\": true
+    \"enabled\": true,
+    \"firstName\": \"$USERNAME\",
+    \"lastName\": \"$USERNAME\",
+    \"email\": \"$USERNAME@test.com\",
+    \"emailVerified\": true
   }")
 
 #                     Check if the user has been successfully created
@@ -73,3 +77,21 @@ curl -s -X PUT \
   }"
 
 echo "User $USERNAME created successfully"
+
+#                     Remove required actions
+curl -s -X PUT \
+  "$KEYCLOAK/admin/realms/$REALM/users/$USER_ID" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"requiredActions\": []
+  }"
+
+#                     Force email verification OFF for the user
+curl -s -X PUT \
+  "$KEYCLOAK/admin/realms/$REALM/users/$USER_ID" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"emailVerified\": true
+  }"
