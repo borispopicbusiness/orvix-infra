@@ -268,6 +268,14 @@ boris@boris-Nitro-AN515-58:~/core-repos/orvix/orvix-infra$
 This confirms that the microservices and ingress routing are correctly deployed and the environment is ready for local
 development and testing.
 
+## Accessing the Keycloak dev instance
+
+To access the Keycloak Administration Console for the development environment open the following link: [http://keycloak-dev.keycloak.example.com/auth/admin/](http://keycloak-dev.keycloak.example.com/auth/admin/)
+
+Use the following administrator credentials to log in:
+- **Username:** <ask author>
+- **Password:** <ask author>
+
 ## Importing orvix-realm.jaml into Keycloak
 
 In the [orvix-gateway](https://github.com/borispopicbusiness/orvix-gateway) repository there is a directory called `keycloak-export`.
