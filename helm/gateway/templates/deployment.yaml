@@ -55,11 +55,20 @@ spec:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
-          {{- with .Values.livenessProbe }}
+            - name: debug
+              containerPort: 5005
+          env:
+            {{- if .Values.javaToolOptions }}
+            - name: JAVA_TOOL_OPTIONS
+              value: {{ .Values.javaToolOptions | quote }}
+            {{- end }}
+          {{/*- with .Values.livenessProbe */}}
+          {{- if .Values.livenessProbe.enabled}}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.readinessProbe }}
+          {{/*- with .Values.readinessProbe */}}
+          {{- if .Values.readinessProbe.enabled}}
           readinessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
