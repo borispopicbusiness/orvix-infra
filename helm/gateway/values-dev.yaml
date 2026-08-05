@@ -56,3 +56,12 @@ config:
 spring:
   profiles:
     active: dev
+
+javaToolOptions: >-
+  -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+
+livenessProbe:
+  enabled: false
+
+readinessProbe:
+  enabled: false
