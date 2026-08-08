@@ -1,46 +1,166 @@
-#
+# Interesting commands and the Calico ip pool migration
+
+## The Calico FelixConfiguration resource
+
+This command:
 
 ```bash
 kubectl get felixconfiguration default -o yaml
 ```
+retrieves the Calico **FelixConfiguration** resource named **default** and prints the complete resource as YAML.
+A possible output might be:
+```yaml
+apiVersion: projectcalico.org/v3
+kind: FelixConfiguration
+metadata:
+  name: default
+spec:
+  bpfEnabled: false
+  logSeverityScreen: Info
+  iptablesBackend: Auto
+```
+A couple of interesting variation of the command:
+```bash
+kubectl get felixconfiguration default -o yaml | less
+```
+The output i get looks like this:
+```yaml
+apiVersion: crd.projectcalico.org/v1
+kind: FelixConfiguration
+metadata:
+  annotations:
+    projectcalico.org/metadata: '{"creationTimestamp":"2025-10-01T06:21:53Z"}'
+  creationTimestamp: "2025-10-01T06:21:53Z"
+  generation: 1
+  name: default
+  resourceVersion: "1025"
+  uid: 2161e3b1-c255-46d6-8022-fd304acd909b
+spec:
+  bpfConnectTimeLoadBalancing: TCP
+  bpfHostNetworkedNATWithoutCTLB: Enabled
+  bpfLogLevel: ""
+  floatingIPs: Disabled
+  logSeverityScreen: Info
+  reportingInterval: 0s
+```
+Another useful variation is with **jsonpath**:
+```bash
+kubectl get felixconfiguration default -o jsonpath='{.spec}'
+```
+The the output of the command when using the jsonpath expression is
+```bash
+boris@boris-Nitro-AN515-58:~$ kubectl get felixconfiguration default -o jsonpath='{.spec}'
+{"bpfConnectTimeLoadBalancing":"TCP","bpfHostNetworkedNATWithoutCTLB":"Enabled","bpfLogLevel":"","floatingIPs":"Disabled","logSeverityScreen":"Info","reportingInterval":"0s"}boris@boris-Nitro-AN515-58:~$ 
+```
 
+For more information about The FelixConfiguration resource see [this article](https://docs.tigera.io/calico/latest/reference/resources/felixconfig).
+
+## The Calico IPPool resource
+
+This command can be used when Calico is installed. It retrieves **the Calico IPPool resource** and displays it as YAML.
 ```bash
 kubectl get ippool -o yaml
 ```
+For example, I have the followibg ip pool defined in my homelab cluster:
+```yaml
+apiVersion: v1
+items:
+- apiVersion: crd.projectcalico.org/v1
+  kind: IPPool
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"crd.projectcalico.org/v1","kind":"IPPool","metadata":{"annotations":{},"name":"default-ipv4-ippool-new"},"spec":{"allowedUses":["Workload","Tunnel"],"blockSize":26,"cidr":"10.244.0.0/16","ipipMode":"Always","natOutgoing":true,"nodeSelector":"all()","vxlanMode":"Never"}}
+    creationTimestamp: "2026-08-04T14:05:16Z"
+    generation: 1
+    name: default-ipv4-ippool-new
+    resourceVersion: "1208071"
+    uid: c5291369-a6cb-4c8b-a111-fa9570279936
+  spec:
+    allowedUses:
+    - Workload
+    - Tunnel
+    blockSize: 26
+    cidr: 10.244.0.0/16
+    ipipMode: Always
+    natOutgoing: true
+    nodeSelector: all()
+    vxlanMode: Never
+kind: List
+metadata:
+  resourceVersion: ""
+```
+There are a couple of interesting parts that I would like to point out:
 
-On the worker node:
+- **cidr: 10.244.0.0/16** This represents the ip pool that is available to Calico
+- **ipipMode: Always** This means that Calico uses IP-in-IP encapsulation for traffic between nodes
+- **natOutgoing: true** This means that Calico performs NAT for network packets sent by a pod to a destination outside the cidr.
+- **nodeSelector: all()** This means that the ip pool can be used by any node inside the cluster.
+- **blockSize: 26** Calico does not normally assign the entire **/16** to a node. It divides the pool into smaller allocation blocks.
 
+## Interesting commands at the Worker-Node Leve
+
+These commands are useful or debugging Kubernetes/Calico networking and traffic flow.
 ```bash
-sudo iptables -t nat =L cali-nat-outgoing -n -v
+sudo iptables -t nat -L cali-nat-outgoing -n -v
+sudo tcpdump -i eth0 host 192.168.1.50
+sudo tcpdump -ni any port 8080
+```
+The iptables command helps you inspect the Calico NAT chain
+- **-t** operate on the **NAT** table
+- **-L** this switch lists rules
+- **cali-nat-outgoing** the name of the chain
+- **-n** don't resolve IP addresses/ports to names
+- **-v** show verbose information, including packet and byte counters
+
+The **cali-nat-outgoing** chain is created by calico for handling outgoing traffic that may need NAT.
+
+The ouptut looks like this:
+```bash
+ubuntu@k8s-wn1:~$ sudo iptables -t nat -L cali-nat-outgoing -n -v
+Chain cali-nat-outgoing (1 references)
+ pkts bytes target     prot opt in     out     source               destination         
+    8   525 MASQUERADE  0    --  *      *       0.0.0.0/0            0.0.0.0/0            /* cali:flqWnvo8yq4ULQLa */ match-set cali40masq-ipam-pools src ! match-set cali40all-ipam-pools dst random-fully
+ubuntu@k8s-wn1:~$ 
+```
+
+The **pkts** and **bytes** columns are particularly useful. They tell us whether traffic has actually matched the rule.
+
+This command captures packets on the **eth0** interface where either the source or destination is **192.16.1.50**
+```bash
 sudo tcpdump -i eth0 host 192.168.1.50
 ```
 
+## Useful commands
+
+Find the pod's ip:
 ```bash
-sudo tcpdump -ni any port 8080
+kubectl get pods -A -o wide
 ```
 
-Find the pod ip:
-
-```bash
-kubectl get pods -A o wide
-```
-
+Run **ping** from inside the pod"
 ```bash
 kubectl exec -it gateway-584c4dbc99-jcxfl -- ping www.google.com
 ```
 
+The status of **the Uncomplicated Firewall**: (usually checked on worker nodes)
 ```bash
 sudo ufw status
 ```
-```bash
-which curl
-which wget
-which nc
 
+## Useful TCP connectivity and HTTP communication commands.
+
+```bash
 curl -v http://192.168.1.10:8080
 nc -vz 192.168.1.10 8080
 wget -O- http://192.168.1.10:8080
 ```
+It is important to note that:
+```bash
+nc -vz 192.168.1.10 8080
+```
+checks only TCP connectivity.
+
 
 ```bash
 nc -lvnp 8080
