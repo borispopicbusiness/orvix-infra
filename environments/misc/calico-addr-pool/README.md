@@ -161,18 +161,59 @@ nc -vz 192.168.1.10 8080
 ```
 checks only TCP connectivity.
 
+## Useful nc commands:
 
 ```bash
 nc -lvnp 8080
 nc -lvnp 8080 -s 0.0.0.0
+```
+These two commands do almost the same thing. The difference is that the second command explicitly specifies the local source address as **0.0.0.0**, which means that **nc** listens on all available network interfaces.
+
+The options(switches):
+- **-l** listen for incomming connections
+- **-v** verbose output
+- **-n** don't perform DNS lookup
+- **-p** specify the port
+
+## A useful **tcpdump** command
+
+This command is usually executed on worker nodes:
+```bash
 sudo tcpdump -ni eth0 host 192.168.1.10 and port 8080
 ```
+The options and filter expressions used:
+- **-n** no DNS lookups
+- **-i** specifies the network interface to capture traffic on, in this case eth0
+- **host <ip_addr>** matches packets where 192.168.1.10 is either the source or destination IP address
+- **and** requires both filter conditions to be true
+- **port <port_no>** matches packets where 8080 is either the source or destination port
 
-On the worker node:
+## The **ipset** Linux utility 
+
+We usually execute this command on worker nodes. This command displays the contents of an ip set called **cali40all-ipam-pools**.
 
 ```bash
 sudo ipset list cali40all-ipam-pools
 ```
+The output might be:
+```bash
+Name: cali40all-ipam-pools
+Type: hash:net
+Revision: 7
+Header: family inet hashsize 1024 maxelem 65536
+Size in memory: 1656
+References: 1
+Number of entries: 1
+Members:
+10.244.0.0/16
+```
+Given that I am working with Calico/Kubernetes, cali40all-ipam-pools is a Calico-related ipset. It can be useful for checking which IPAM pools/networks Calico is currently considering.
+
+You can also use:
+```bash
+sudo ipset list
+```
+to see all ipsets currently present on the node.
 
 Create a new Calico ip pool:
 
