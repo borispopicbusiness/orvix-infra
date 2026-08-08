@@ -215,7 +215,9 @@ sudo ipset list
 ```
 to see all ipsets currently present on the node.
 
-Create a new Calico ip pool:
+## How to create a new Calico ip pool
+
+We can create a here-document and pipe it ino **kubectl apply -f**:
 
 ```bash
 cat <<EOF | kubectl apply -f -
@@ -231,12 +233,12 @@ spec:
   natOutgoing: true
   nodeSelector: all()
   allowedUses:
-  - Workload
-  - Tunnel
+    - Workload
+    - Tunnel
 EOF
 ```
 
-disable the old pool:
+Disabling the old ip pool is very simple:
 
 ```bash
 kubectl patch ippool default-ipv4-ippool \
@@ -244,11 +246,14 @@ kubectl patch ippool default-ipv4-ippool \
   -p '{"spec":{"disabled":true}}'
 ```
 
-A way you can restart your pod:
+One technical note: creating the new pool and disabling the old pool are separate operations. Creating the new IPPool does not automatically migrate existing workloads to it; the new pool becomes available for IP allocation according to Calico's IPAM behavior and configuration.
 
+One way to restart your pod:
 ```bash
 kubectl delete pod -n dev gateway-c95c655b4-58v8d
 ```
+
+## Useful kubectl monitoring commands
 
 ```bash
 kubectl get pods -A
@@ -293,7 +298,13 @@ kubectl get felixconfiguration default -o yaml
 kubectl get bgpconfiguration default -o yaml
 ```
 
-    Your Calico pod CIDR (192.168.0.0/16) overlaps with your physical LAN (192.168.1.0/24). This is why pod → notebook traffic is leaving with the pod IP instead of being masqueraded.
+## Diagnostics example:
+
+Your Calico pod CIDR (192.168.0.0/16) overlaps with your physical LAN (192.168.1.0/24). This can cause routing and NAT issues when pod traffic is sent to hosts on the physical LAN. In this case, pod → notebook traffic may leave the cluster with the pod IP instead of being masqueraded.
+You can inspect the Calico FelixConfiguration with:
+```bash
+kubectl get felixconfiguration default -o yaml
+```
 
 ```bash
 boris@boris-Nitro-AN515-58:~/core-repos/orvix/orvix-infra$ kubectl get felixconfiguration default -o yaml
@@ -314,9 +325,7 @@ spec:
   floatingIPs: Disabled
   logSeverityScreen: Info
   reportingInterval: 0s
-boris@boris-Nitro-AN515-58:~/core-repos/orvix/orvix-infra$ kubectl get bgpconfiguration default -o yaml
-Error from server (NotFound): bgpconfigurations.crd.projectcalico.org "default" not found
-boris@boris-Nitro-AN515-58:~/core-repos/orvix/orvix-infra$ 
+boris@boris-Nitro-AN515-58:~/core-repos/orvix/orvix-infra$
 ```
 
 ```yaml
@@ -326,6 +335,18 @@ spec:
   bpfHostNetworkedNATWithoutCTLB: Enabled
 ```
 
+You can also check whether a default Calico BGPConfiguration exists:
+```bash
+kubectl get bgpconfiguration default -o yaml
+```
+
+In this example, no default BGP configuration exists:
+```bash
+boris@boris-Nitro-AN515-58:~/core-repos/orvix/orvix-infra$ kubectl get bgpconfiguration default -o yaml
+Error from server (NotFound): bgpconfigurations.crd.projectcalico.org "default" not found
+boris@boris-Nitro-AN515-58:~/core-repos/orvix/orvix-infra$
+```
+
 Nothing here affects the pod CIDR migration.
 
 Important observations:
@@ -333,16 +354,6 @@ Important observations:
 - No custom Felix settings that would complicate migration.
 - No floating IPs.
 - eBPF-related options exist, but your earlier iptables output shows you are still using the iptables dataplane for NAT.
-
-```bash
-kubectl get bgpconfiguration default -o yaml
-```
-
-```bash
-boris@boris-Nitro-AN515-58:~$ kubectl get bgpconfiguration default -o yaml
-Error from server (NotFound): bgpconfigurations.crd.projectcalico.org "default" not found
-boris@boris-Nitro-AN515-58:~$ 
-```
 
 That means I do not have a Calico BGP configuration object.
 Combined with your IPPool:
@@ -368,6 +379,7 @@ my networking mode is:
 
 Calico is using IPIP, not BGP routing.
 
+To verify whether Calico was installed using the manifest approach, we can check whether the Tigera Operator and Installation resources exist:
 ```bash
 kubectl get pods -n tigera-operator
 kubectl get installation default -o yaml
@@ -380,6 +392,8 @@ boris@boris-Nitro-AN515-58:~$ kubectl get installation default -o yaml
 error: the server doesn't have a resource type "installation"
 boris@boris-Nitro-AN515-58:~$
 ```
+
+This indicates that the Tigera Operator is not installed and the Installation custom resource is not available in the cluster.
 
 ```bash
 kubectl -n kube-system get ds calico-node -o yaml | grep -A3 CALICO_IPV4POOL
@@ -865,6 +879,8 @@ boris@boris-Nitro-AN515-58:~$ kubectl -n kube-system get ds calico-node -o yaml 
           value: Never
 boris@boris-Nitro-AN515-58:~$
 ```
+These variables can tell you how the Calico node configuration was originally set, including the IPv4 pool CIDR and encapsulation settings.
+One important detail: the environment variables in the DaemonSet are not necessarily the authoritative current IPPool configuration. For the actual Calico IPPool resources, a better command is:
 
 I used Calico manifest installation, which is true.
 
