@@ -1,0 +1,52 @@
+namespace: dev
+
+resources:
+  limits:
+    cpu: 1
+    memory: 1Gi
+  requests:
+    cpu: 500m
+    memory: 500Mi
+
+hostAliases:
+  - ip: "192.168.1.242"
+    hostnames:
+      - "keycloak-dev.keycloak.example.com"
+
+ingress:
+  enabled: true
+  className: traefik
+  annotations: {}
+  hosts:
+    - host: user-service.dev.k8s-svc.homelab
+      paths:
+        - path: /
+          pathType: Prefix
+
+spring:
+  profiles:
+    active: dev
+
+javaToolOptions: >-
+  -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+
+livenessProbe:
+  enabled: false
+
+readinessProbe:
+  enabled: false
+
+config:
+  data:
+    server.port: "8080"
+    spring.application.name: "user-service - dev"
+    spring.security.oauth2.resourceserver.jwt.issuer-uri: http://keycloak-dev.keycloak.example.com/auth/realms/orvix-realm
+    management.endpoints.web.exposure.include: "health,info,refresh"
+    management.info.env.enabled: "true"
+    info.app.name: "Orvix User Service (dev) - from Config Map"
+    info.app.version: "1.0.1-dev"
+    info.app.description: "Orvix User Service (dev) microservice's description is from the Config Map"
+#    downstream.uri: "http://192.168.1.10:8081"
+#    spring.cloud.gateway.routes.0.id: "diagnostics"
+#    spring.cloud.gateway.routes.0.uri: "${downstream.uri}"
+#    spring.cloud.gateway.routes.0.predicates.0: "Path=/api/v1/diagnostics/gateway/services/all"
