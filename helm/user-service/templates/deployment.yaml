@@ -62,6 +62,21 @@ spec:
             - name: JAVA_TOOL_OPTIONS
               value: {{ .Values.javaToolOptions | quote }}
             {{- end }}
+            {{- if .Values.podName }}
+            - name: {{ .Values.podName.name }}
+              valueFrom:
+            {{- toYaml .Values.podName.valueFrom | nindent 16 }}
+            {{- end }}
+            {{- if .Values.podNamespace }}
+            - name: {{ .Values.podNamespace.name }}
+              valueFrom:
+            {{- toYaml .Values.podNamespace.valueFrom | nindent 16 }}
+            {{- end }}
+            {{- if .Values.podIPAddr }}
+            - name: {{ .Values.podIPAddr.name }}
+              valueFrom:
+            {{- toYaml .Values.podIPAddr.valueFrom | nindent 16 }}
+            {{- end }}
           {{/*- with .Values.livenessProbe */}}
           {{- if .Values.livenessProbe.enabled}}
           livenessProbe:
