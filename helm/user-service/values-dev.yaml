@@ -30,6 +30,24 @@ spring:
 javaToolOptions: >-
   -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
 
+podName:
+  name: POD_NAME
+  valueFrom:
+    fieldRef:
+      fieldPath: metadata.name
+
+podNamespace:
+  name: POD_NAMESPACE
+  valueFrom:
+    fieldRef:
+      fieldPath: metadata.namespace
+
+podIPAddr:
+  name: POD_IPAddr
+  valueFrom:
+    fieldRef:
+      fieldPath: status.podIP
+
 livenessProbe:
   enabled: false
 
