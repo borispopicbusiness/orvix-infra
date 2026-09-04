@@ -1,0 +1,61 @@
+namespace: default
+
+name: postgres
+
+clusterName: orvix-postgresql
+
+replicaCount: 2
+
+image:
+  repository: borispopicdev/postgresql-patroni
+  tag: "latest"
+  pullPolicy: Always
+
+service:
+  port: 5432
+  targetPort: 5432
+
+patroni:
+  port: 8080
+
+  kubernetes:
+    useEndpoints: "true"
+
+  ports:
+    - name: postgresql
+      port: 5432
+
+postgres:
+  password: ""
+  replicationPassword: ""
+
+  storage:
+    size: 10Gi
+    accessModes:
+      - ReadWriteOnce
+
+pod:
+  managementPolicy: OrderedReady
+  terminationGracePeriodSeconds: 30
+
+resources:
+  requests:
+    cpu: "500m"
+    memory: "1Gi"
+
+  limits:
+    cpu: "1"
+    memory: "2Gi"
+
+probes:
+  readiness:
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 5
+    failureThreshold: 6
+
+  liveness:
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 6

@@ -1,0 +1,85 @@
+scope: orvix-postgresql
+name: ${POD_NAME}
+
+restapi:
+  listen: 0.0.0.0:8080
+  connect_address: ${POD_IP}:8080
+
+kubernetes:
+  namespace: ${POD_NAMESPACE}
+
+  labels:
+    cluster-name: orvix-postgresql
+  scope_label: cluster-name
+  role_label: role
+  leader_label_value: primary
+  follower_label_value: replica
+  use_endpoints: true
+
+  pod_ip: ${POD_IP}
+
+  ports:
+    - name: postgresql
+      port: 5432
+
+etcd:
+  host: 0.0.0.0:2379
+
+bootstrap:
+  dcs:
+    ttl: 30
+    loop_wait: 10
+    retry_timeout: 10
+    maximum_lag_on_failover: 1048576
+    postgresql:
+      use_pg_rewind: true
+      use_slots: true
+      # FIXED: Removed root duplicate, corrected IPv6 mask, switched local to scram for security
+      pg_hba:
+        - local all postgres scram-sha-256
+        - local all all scram-sha-256
+        - host all all 0.0.0.0/0 scram-sha-256
+        - host all all ::/0 scram-sha-256
+        - host replication replicator 0.0.0.0/0 scram-sha-256
+        - host replication replicator ::/0 scram-sha-256
+      parameters:
+        wal_level: replica
+        hot_standby: "on"
+        max_wal_senders: 10
+        max_replication_slots: 10
+        password_encryption: scram-sha-256
+
+  # FIXED: Moved initdb inside bootstrap and corrected syntax
+  initdb:
+    - encoding: UTF8
+    - data-checksums
+
+postgresql:
+  listen: 0.0.0.0:5432
+  connect_address: ${POD_IP}:5432
+
+  data_dir: /var/lib/postgresql/data/pgdata
+
+  authentication:
+    superuser:
+      username: postgres
+      password: ${POSTGRES_PASSWORD}
+
+    replication:
+      username: replicator
+      password: ${REPLICATION_PASSWORD}
+
+  parameters:
+    unix_socket_directories: /var/run/postgresql
+
+  # FIXED: Raised timeout to prevent aggressive kills during heavy WAL flushes
+  pg_ctl_timeout: 120
+
+watchdog:
+  mode: off
+
+tags:
+  #nofailover: false
+  noloadbalance: false
+  clonefrom: false
+  nostream: false

@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.name }}-replica
+  namespace: {{ .Values.namespace }}
+  labels:
+    cluster-name: {{ .Values.clusterName }}
+spec:
+  selector:
+    cluster-name: {{ .Values.clusterName }}
+    role: replica
+
+  ports:
+    - name: postgresql
+      port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.targetPort }}
