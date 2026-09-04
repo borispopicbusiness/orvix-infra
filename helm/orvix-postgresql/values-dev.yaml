@@ -1,0 +1,25 @@
+namespace: dev
+
+replicaCount: 2
+
+image:
+  repository: borispopicdev/postgresql-patroni
+  tag: "latest"
+  pullPolicy: Always
+
+secret:
+  name: postgresql-credentials
+  encryptedData:
+    POSTGRES_PASSWORD: AgAULEo18/y6e+QgqejaDOH+wcaQY6gc560p+PjjIeUGuvsxP18YnICOHbwakOQENfdxgZo6oGU6UBMr1k/JO7luNFqIDqd+QfPICuwC5Fs22I7nPB5ft5gzlOdWUWT2beY8G29gMI6Yun6DQjdhNRud75LlIYGrPomvpD4/mbVOkptO9L3TS/Px2ibnOuMqr3Mge1HyqLFrP+XiyJkeT6Tkmdh28TfSO3lgGjCCaUInzDb2/cTn3NE4tGbaqWTbdXd4MW6r156nGKv+0hqYEu7kRzN5D1mxYWV7Nt3uNArRNxMEubTYQWSkQGRIkOxh9WInzSXZRxitSt8WRtg4y3pHlFD0ZtO8THmHfodXT5lZ50ZW1J11jiwV/5YtxEXn1RlPpwReAtWAd9kRfh3sruV7Vyc5h7tMiOBm3+5mDmZRoJTTnjNR5mnBDTTmJ9qf5rUJUjgdwemg40kNcQAHSG2egAa+ELzQSDe2A164hrn5qRz9GJcNyuLirvzlWT/+3i42jnlupiJHPzlyYWhC+USYkIxZfGyiflX34aI2pN0b+MgFO974C7dcbaH12yyOAkNgkz97ACT8zJT+UM0EpG4v7yVolclNTI4zvIDOdGAEFi/9PL6HmHNkUHYCgwkxjhA9D1Bs2MKdHLxC3nmSbAFUX0gWjLxt0+dXtJGSf6+r4YJquxwg9uWpoXOVJ263goRvw3ajRmUvKbAXpldo6Qn6+w==
+    REPLICATION_PASSWORD: AgB/ZSWw7O3/tZn+YvLnveq6PZlAhb5jF8UdcycJg3ik/tGqqdvrIRYupETJbTLc8nlNsCmXmypav2lfM7idlxoDMtFlJmYA1nzIbNtrEPF6it2wy84UIV36v3AIDxlrtptkYx3weus7Y1kTPxPIK1gWCeI5N6AM+h5lwfXU9twbEy2rcfeab4KCtttVb342PydYbYumaELLV9xc1KTtH/K69dbYQHdKeOnDh5L6vdvoaMd6hbYSoohvz0cpQY5UArCGbrtMozsuZvbM4cDDMddfjSLN2zkdIN89/OZsNI1dCFircqXDILs0Qf74hauvkT397hIfxYWChsUxM9gjdiETYPoj+oFTLBDJxpfDS8nDyhqTDpU6WM6LWQRB7ZiUBbq2PZocyqeYLXtxrO2LkJBfH+fczT5vYGcy9vVvClnnN7Hp37S88UunRwhBlI8JF+xLQd5j+H16VQ5eHGzfZhCqL6358rIeGIIkMPgsuxoAJtLhR7/C/pmStVd6y1LBFMWCE5ZHox6T3vZsMC8rrKOZWuHVvLTcIK1wkFAKLfZKeEnS5VYdg6jee8DzBNrnLuKpCWezzICO04MSGfTqL+YAlko7pwWkRWQJJy8jhzan2NNllE5lrgc8ErLj15EPqKop03fCTA8zCfOLBD6v5e53aIgWKX+6WtahpRPUGG81+s+a3sOy5VPwYBTiGSZ8YO/HUwaJ6NuQ/qR3NE8tuQg59L7n1w==
+
+storage:
+    size: 10Gi
+
+resources:
+  requests:
+    cpu: "250m"
+    memory: "512Mi"
+  limits:
+    cpu: "1"
+    memory: "2Gi"

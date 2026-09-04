@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    cluster-name: {{ .Values.clusterName }}
+spec:
+  clusterIP: None # This one is headless.
+
+  selector:
+    cluster-name: {{ .Values.clusterName }}
+
+  ports:
+    - name: postgresql
+      port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.targetPort }}
