@@ -18,3 +18,11 @@ Each directory represents a single Helm chart. For example:
       templates/
         deployment.yaml
         etc.
+    
+    report-service/ - represents the helm chart of report microservice
+      Chart.yaml
+      values-dev.yaml
+      values-prod.yaml
+      templates/
+        deployment.yaml
+        etc.
