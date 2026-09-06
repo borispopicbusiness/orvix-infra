@@ -50,12 +50,16 @@ config:
     info.app.description: "Orvix Gateway (dev) microservice's description is from the Config Map"
     downstream.uri: "http://192.168.1.10:8080"
     downstream.user.uri: "http://user-service:8080"
+    downstream.report.uri: "http://report-service:8080"
     spring.cloud.gateway.routes.0.id: "diagnostics"
     spring.cloud.gateway.routes.0.uri: "${downstream.uri}"
     spring.cloud.gateway.routes.0.predicates.0: "Path=/api/v1/diagnostics/gateway/services/all"
     spring.cloud.gateway.routes.1.id: "user-diagnostics"
     spring.cloud.gateway.routes.1.uri: "${downstream.user.uri}"
     spring.cloud.gateway.routes.1.predicates.0: "Path=/api/v1/user/**"
+    spring.cloud.gateway.routes.2.id: "user-diagnostics"
+    spring.cloud.gateway.routes.2.uri: "${downstream.report.uri}"
+    spring.cloud.gateway.routes.2.predicates.0: "Path=/api/v1/report/**"
 
 spring:
   profiles:
