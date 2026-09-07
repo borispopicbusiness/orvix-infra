@@ -54,6 +54,8 @@ bootstrap:
     - encoding: UTF8
     - data-checksums
 
+  post_init: /usr/local/bin/create-database.sh
+
 postgresql:
   listen: 0.0.0.0:5432
   connect_address: ${POD_IP}:5432

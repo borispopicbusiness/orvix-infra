@@ -22,6 +22,9 @@ RUN apt-get update \
 ENV PATH="/opt/patroni/bin:$PATH"
 
 COPY patroni.yaml /etc/patroni/patroni.yaml.template
+COPY create-database.sh /usr/local/bin/create-database.sh
+
+RUN chmod +x /usr/local/bin/create-database.sh
 
 #ENTRYPOINT ["patroni", "/etc/patroni/patroni.yaml"]
 ENTRYPOINT ["/bin/sh", "-c", "envsubst < /etc/patroni/patroni.yaml.template > /tmp/patroni.yaml && exec patroni /tmp/patroni.yaml"]
