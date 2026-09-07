@@ -239,4 +239,20 @@ Type "help" for help.
 
 postgres=# 
 ```
-**The important point is that applications should use the postgres-primary Service rather than a specific PostgreSQL pod. This allows the Kubernetes Service to follow the current Patroni primary during a failover.**
+**The important point is that applications should **use the postgres-primary** Service rather than a specific PostgreSQL pod. This allows the Kubernetes Service to follow the current Patroni primary during a failover.**
+
+As you can see the database `orvix-dev` is created and ready. The name prefix is actually the name of the k8s namespace that the database is run in.
+
+```bash
+boris@boris-Nitro-AN515-58:~/core-repos/orvix/orvix-user$ kubectl exec -it -n dev postgres-0 -- psql -U postgres -d postgres -W -c "SELECT datname FROM pg_database;"
+Password: 
+  datname  
+-----------
+ postgres
+ orvix-dev
+ template1
+ template0
+(4 rows)
+
+boris@boris-Nitro-AN515-58:~/core-repos/orvix/orvix-user$ 
+```
